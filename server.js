@@ -29,4 +29,4 @@ process.on("uncaughtException", err => {
   process.exit(1);
 });
 
-// 16 ka na
+// 20 ka na

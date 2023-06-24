@@ -1,8 +1,8 @@
 const User = require("../models/userModel");
 const CustomError = require("../errors");
-const jwt = require("jsonwebtoken");
+const { attachCookiesToResponse } = require("../utils");
 
-const register = async (req, res) => {
+exports.register = async (req, res) => {
   try {
     let user = await User.findOne({ email: req.body.email });
 
@@ -16,26 +16,16 @@ const register = async (req, res) => {
       role: user.role,
     };
 
-    const token = jwt.sign(tokenUser, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_LIFETIME,
-    });
-
-    return res.status(201).send({ user: tokenUser, token });
+    attachCookiesToResponse({ res, user: tokenUser });
   } catch (err) {
     return res.status(400).send(err.message);
   }
 };
 
-const login = async (req, res) => {
+exports.login = async (req, res) => {
   res.send("Login user");
 };
 
-const logout = async (req, res) => {
+exports.logout = async (req, res) => {
   res.send("Logout user");
-};
-
-module.exports = {
-  register,
-  login,
-  logout,
 };
