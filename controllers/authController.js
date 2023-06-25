@@ -23,9 +23,30 @@ exports.register = async (req, res) => {
 };
 
 exports.login = async (req, res) => {
-  res.send("Login user");
+  if (!req.body.email || !req.body.password)
+    CustomError.UnauthenticatedError("Please provide email and password");
+
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) return res.status(401).send("Incorrect password or email");
+
+  const isCorrectPassword = await user.comparePassword(req.body.password);
+  if (!isCorrectPassword)
+    throw new CustomError.UnauthenticatedError("Incorrect password or email");
+
+  const tokenUser = {
+    userId: user._id,
+    name: user.name,
+    role: user.role,
+  };
+
+  attachCookiesToResponse({ res, user: tokenUser });
 };
 
 exports.logout = async (req, res) => {
-  res.send("Logout user");
+  res.cookie("token", "logout", {
+    httpOnly: true,
+    expires: new Date(Date.now()),
+  });
+
+  return res.status(200).send("Logged out successfully");
 };
