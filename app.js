@@ -19,11 +19,6 @@ app.use(cookieParser(process.env.JWT_SECRET));
 const routes = require("./routes");
 app.use(routes);
 
-app.get("/api/v1", (req, res) => {
-  console.log(req.cookies);
-  res.send("Welcome to the Dead City");
-});
-
 // Static site
 app.use(express.static("./public"));
 
@@ -32,4 +27,4 @@ app.use(errorHandlerMiddleware);
 
 module.exports = app;
 
-// 25
+// 31 ka na
