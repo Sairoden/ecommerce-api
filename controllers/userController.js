@@ -21,7 +21,7 @@ const getSingleUser = async (req, res) => {
 };
 
 const showCurrentUser = async (req, res) => {
-  res.send("show current user");
+  res.status(200).send({ user: req.user });
 };
 
 const updateUser = async (req, res) => {
