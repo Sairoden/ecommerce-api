@@ -22,9 +22,7 @@ router
 
 router.route("/showMe").get(authenticateUser, showCurrentUser);
 router.route("/updateUser").patch(authorizePermissions, updateUser);
-router
-  .route("/updateUserPassword")
-  .patch(authorizePermissions, updateUserPassword);
+router.route("/updateUserPassword").patch(authenticateUser, updateUserPassword);
 
 router.route("/:id").get(authenticateUser, getSingleUser);
 
