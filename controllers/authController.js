@@ -1,6 +1,6 @@
 const User = require("../models/userModel");
 const CustomError = require("../errors");
-const { attachCookiesToResponse } = require("../utils");
+const { attachCookiesToResponse, createTokenUser } = require("../utils");
 
 exports.register = async (req, res) => {
   try {
@@ -10,11 +10,7 @@ exports.register = async (req, res) => {
 
     user = await User.create(req.body);
 
-    const tokenUser = {
-      userId: user._id,
-      name: user.name,
-      role: user.role,
-    };
+    const tokenUser = createTokenUser(user);
 
     attachCookiesToResponse({ res, user: tokenUser });
   } catch (err) {
@@ -24,20 +20,16 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
   if (!req.body.email || !req.body.password)
-    CustomError.UnauthenticatedError("Please provide email and password");
+    return res.status(400).send("Please provide email and password");
 
   const user = await User.findOne({ email: req.body.email });
   if (!user) return res.status(401).send("Incorrect password or email");
 
   const isCorrectPassword = await user.comparePassword(req.body.password);
   if (!isCorrectPassword)
-    throw new CustomError.UnauthenticatedError("Incorrect password or email");
+    return res.status(400).send("Please provide email and password");
 
-  const tokenUser = {
-    userId: user._id,
-    name: user.name,
-    role: user.role,
-  };
+  const tokenUser = createTokenUser(user);
 
   attachCookiesToResponse({ res, user: tokenUser });
 };
