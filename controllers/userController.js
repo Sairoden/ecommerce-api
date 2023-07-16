@@ -1,7 +1,11 @@
 const User = require("../models/userModel");
 const CustomError = require("../errors");
 
-const { createTokenUser, attachCookiesToResponse } = require("../utils");
+const {
+  createTokenUser,
+  attachCookiesToResponse,
+  checkPermission,
+} = require("../utils");
 
 const getAllUsers = async (req, res) => {
   const users = await User.find({ role: "user" }).select("-password");
@@ -18,6 +22,10 @@ const getSingleUser = async (req, res) => {
     res.status(404).send(`No user with id: ${req.params.id}`);
     throw new CustomError.NotFoundError(`No user with id: ${req.params.id}`);
   }
+
+  const permission = checkPermission(req.user, user._id);
+  if (!permission)
+    return res.status(401).send("You are not authorized to access this route");
 
   return res.status(200).send(user);
 };
