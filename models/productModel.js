@@ -26,7 +26,7 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please provide a product category"],
       enum: {
-        values: ["ikea", "liddy", "marcos"],
+        values: ["office", "clothes", "beauty"],
         message: "{VALUE} is not supported",
       },
     },
