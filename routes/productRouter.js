@@ -1,4 +1,5 @@
 const express = require("express");
+const multer = require("multer");
 
 const {
   createProduct,
@@ -27,8 +28,22 @@ router
   .patch(authenticateUser, authorizePermissions("admin"), updateProduct)
   .delete(authenticateUser, authorizePermissions("admin"), deleteProduct);
 
+const storage = multer.diskStorage({
+  destination: "public/uploads/",
+  filename: function (req, file, cb) {
+    cb(null, file.originalname); // Use the original name as the file name
+  },
+});
+
+const upload = multer({ storage: storage });
+
 router
   .route("/uploadImage")
-  .post(authenticateUser, authorizePermissions("admin"), uploadImage);
+  .post(
+    authenticateUser,
+    authorizePermissions("admin"),
+    upload.single("image"),
+    uploadImage
+  );
 
 module.exports = router;

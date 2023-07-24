@@ -1,3 +1,7 @@
+// Libray
+const path = require("path");
+
+// Model
 const Product = require("../models/productModel");
 
 const createProduct = async (req, res) => {
@@ -64,7 +68,21 @@ const deleteProduct = async (req, res) => {
 };
 
 const uploadImage = async (req, res) => {
-  return res.status(200).send("Upload Image");
+  if (!req.file) return res.status(400).send({ msg: "No File Uploaded" });
+
+  const productImage = req.file;
+
+  if (!productImage.mimetype.startsWith("image"))
+    return res.status(400).send({ msg: "Please upload image" });
+
+  const maxSize = 1024 * 1024;
+
+  if (productImage.size > maxSize)
+    return res
+      .status(400)
+      .send({ msg: "Please upload image smaller than 1mb" });
+
+  return res.status(200).send({ image: `/uploads/${productImage.filename}` });
 };
 
 module.exports = {
