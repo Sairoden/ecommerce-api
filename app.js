@@ -27,4 +27,4 @@ app.use(errorHandlerMiddleware);
 
 module.exports = app;
 
-// 45 ka na
+// 49 ka na
