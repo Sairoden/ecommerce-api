@@ -3,17 +3,29 @@ const Product = require("../models/productModel");
 const { checkPermission } = require("../utils");
 
 const getAllReviews = async (req, res) => {
-  const { product: productId } = req.body;
-  req.body.user = req.user.userId;
+  try {
+    const reviews = await Review.find();
 
-  const isValidProduct = await Product.findById(productId);
-
-  if (!isValidProduct) throw new Error(`No product with id : ${productId}`);
-  return res.status(200).send("Get All Reviews");
+    return res.status(200).send({ reviews, count: reviews.length });
+  } catch (err) {
+    console.log(err.message);
+    return res.status(400).send({ error: err.message });
+  }
 };
 
 const getSingleReview = async (req, res) => {
-  return res.status(200).send("Get Single Review");
+  try {
+    const { id: reviewId } = req.params;
+
+    const review = await Review.findById(reviewId);
+
+    if (!review) throw new Error(`No review with id ${reviewId}`);
+
+    return res.status(200).send({ review });
+  } catch (err) {
+    console.log(err.message);
+    return res.status(400).send({ error: err.message });
+  }
 };
 
 const createReview = async (req, res) => {
@@ -30,7 +42,7 @@ const createReview = async (req, res) => {
       user: req.user.userId,
     });
 
-    if (!existedReview)
+    if (existedReview)
       throw new Error("Already submitted a review for this product");
 
     const review = await Review.create(req.body);
