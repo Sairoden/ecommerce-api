@@ -17,7 +17,10 @@ const createProduct = async (req, res) => {
 };
 
 const getAllProducts = async (req, res) => {
-  const products = await Product.find();
+  const products = await Product.find().populate({
+    path: "user",
+    select: "name",
+  });
 
   if (!products)
     return res.status(400).send({ msg: "There are no products available" });

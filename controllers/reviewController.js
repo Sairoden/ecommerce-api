@@ -4,7 +4,12 @@ const { checkPermission } = require("../utils");
 
 const getAllReviews = async (req, res) => {
   try {
-    const reviews = await Review.find();
+    const reviews = await Review.find()
+      .populate({
+        path: "product",
+        select: "name company price",
+      })
+      .populate({ path: "user", select: "name" });
 
     return res.status(200).send({ reviews, count: reviews.length });
   } catch (err) {
@@ -50,12 +55,34 @@ const createReview = async (req, res) => {
     return res.status(201).send(review);
   } catch (err) {
     console.log(err.message);
-    return res.status(400).send(err.message);
+    return res.status(400).send({ error: err.message });
   }
 };
 
 const updateReview = async (req, res) => {
-  return res.status(200).send("Update Review");
+  try {
+    const { id: reviewId } = req.params;
+    const { rating, title, comment } = req.body;
+
+    const review = await Review.findById(reviewId);
+
+    if (!review) throw new Error(`No review with id ${reviewId}`);
+
+    const permission = checkPermission(req.user, review.user);
+    if (!permission)
+      return res.status(401).send("You do not have permission to update");
+
+    if (rating) review.rating = rating;
+    if (title) review.title = title;
+    if (comment) review.comment = comment;
+
+    await review.save();
+
+    res.status(200).send({ review });
+  } catch (err) {
+    console.log(err.message);
+    return res.status(404).send({ error: err.message });
+  }
 };
 
 const deleteReview = async (req, res) => {
