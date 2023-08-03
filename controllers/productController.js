@@ -31,7 +31,7 @@ const getAllProducts = async (req, res) => {
 const getSingleProduct = async (req, res) => {
   const { id: productId } = req.params;
 
-  const product = await Product.findById(productId);
+  const product = await Product.findById(productId).populate("reviews");
 
   if (!product)
     return res
@@ -60,12 +60,13 @@ const updateProduct = async (req, res) => {
 const deleteProduct = async (req, res) => {
   const { id: productId } = req.params;
 
-  const product = await Product.findByIdAndDelete(productId);
+  const product = await Product.findOneAndDelete({ _id: productId });
 
-  if (!product)
+  if (!product) {
     return res
       .status(400)
       .send({ msg: "No product for the given id", productId });
+  }
 
   return res.status(200).send({ msg: "Success! Product removed" });
 };
