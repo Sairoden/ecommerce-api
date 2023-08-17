@@ -89,14 +89,12 @@ const deleteReview = async (req, res) => {
   try {
     const { id: reviewId } = req.params;
 
-    const review = await Review.findOne({ _id: reviewId });
+    const review = await Review.findOneAndDelete({ _id: reviewId });
     if (!review) throw new Error(`No review with id ${reviewId}`);
 
     const permission = checkPermission(req.user, review.user);
     if (!permission)
       return res.status(401).send("You do not have permission to delete");
-
-    await review.deleteOne();
 
     return res.status(200).send({ review });
   } catch (err) {
