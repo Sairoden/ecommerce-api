@@ -8,27 +8,37 @@ const fakeStripeAPI = async ({ amount, currency }) => {
 };
 
 const getAllOrders = async (req, res) => {
-  return res.status(200).send("Get All Orders");
+  const orders = await Order.find({});
+
+  return res.status(200).send({ orders, count: orders.length });
 };
 
 const getSingleOrder = async (req, res) => {
-  return res.status(201).send("Get Order");
+  const { id: orderId } = req.params;
+  const order = await Order.findById(orderId);
+
+  if (!order) return res.status(400).send(`No order with id: ${orderId}`);
+
+  checkPermission(req.user, order.user);
+
+  return res.status(200).send({ order });
 };
 
 const getCurrentUserOrders = async (req, res) => {
-  return res.status(200).send("Get Current User Orders");
+  const orders = await Order.find({ user: req.user.userId });
+
+  return res.status(200).send({ orders, count: orders.length });
 };
 
 const createOrder = async (req, res) => {
   try {
-
     const { items: cartItems, tax, shippingFee } = req.body;
 
     if (!cartItems || cartItems.length < 1)
-      throw new Error("No cart items provided");
+      return res.status(400).send("No cart items provided");
 
     if (!tax || !shippingFee)
-      throw new Error("Please provide tax and shipping fee");
+      return res.status(400).send("Please provide tax and shipping fee");
 
     let orderItems = [];
     let subTotal = 0;
@@ -36,7 +46,8 @@ const createOrder = async (req, res) => {
     for (let item of cartItems) {
       const dbProduct = await Product.findOne({ _id: item.product });
 
-      if (!dbProduct) throw new Error(`No product with id: ${dbProduct.id}`);
+      if (!dbProduct)
+        return res.status(400).send(`No product with id: ${dbProduct.id}`);
 
       const { name, price, image, _id } = dbProduct;
       const singleOrderItem = {
@@ -81,7 +92,20 @@ const createOrder = async (req, res) => {
 };
 
 const updateOrder = async (req, res) => {
-  return res.status(200).send("Update Order");
+  const { id: orderId } = req.params;
+  const { paymentIntentId } = req.body;
+
+  const order = await Order.findById(orderId);
+  if (!order) return res.status(400).send(`No order with id: ${orderId}`);
+
+  checkPermission(req.user, order.user);
+
+  order.paymentIntentId = paymentIntentId;
+  order.status = "paid";
+
+  await order.save();
+
+  return res.status(200).send({ order });
 };
 
 module.exports = {
